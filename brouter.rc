@@ -1,1 +1,156 @@
-TBD
+---context:global
+assign validForBikes               = true
+assign processUnusedTags           = false # %processUnusedTags% | Set true to output unused tags in data tab | boolean
+
+---context:way
+
+# only practical to consider public bike-able paths, plus ferry
+assign impracticality_penalty =
+  if (
+    or highway=proposed|abandoned|motorway|motorway_link
+    or motorroad=yes
+    or access=private|no
+    or vehicle=private|no
+    ( and ( not route=ferry ) highway= )
+  ) then 1000
+  else 0
+
+# avoid pedestrian-only infrastructure
+assign pedestrian_penalty =
+  if (
+    or highway=footway
+    bicycle=dismount
+  )                         then 20
+  else if highway=steps     then 50
+  else 0
+
+# avoid shared lanes and painted gutters
+assign low_grade_cycling_infrastructure_penalty =
+  if (
+    or highway=residential|living_street
+       living_street=yes
+  )                             then 8
+  else if cycleway=shared_lane  then 10
+  else if not highway=cycleway  then 20
+  else 0
+
+assign cycle_route =
+  or bicycle_road=yes
+  or bicycle=yes
+  or bicycle=permissive
+  or bicycle=designated 
+  or route_bicycle_icn=yes
+  or route_bicycle_ncn=yes
+  or route_bicycle_rcn=yes
+  or route_bicycle_lcn=yes
+  lcn=yes
+
+# handle one-ways. On primary roads, wrong-oneways should
+# be close to forbidden, while on other ways we just add
+# 4 to the costfactor (making it at least 5 - you are allowed
+# to push your bike)
+assign badoneway =
+       if reversedirection=yes then
+         if oneway:bicycle=yes then true
+         else if oneway= then junction=roundabout
+         else oneway=yes|true|1
+       else oneway=-1
+
+assign one_way_penalty =
+       if ( badoneway ) then
+       (
+         if      ( cycleway=opposite|opposite_lane|opposite_track       ) then 0
+         else if ( cycleway:left=opposite|opposite_lane|opposite_track  ) then 0
+         else if ( cycleway:right=opposite|opposite_lane|opposite_track ) then 0
+         else if ( oneway:bicycle=no                         ) then 0
+         else if ( junction=roundabout|circular              ) then 60
+         else if ( highway=primary|primary_link              ) then 50
+         else if ( highway=secondary|secondary_link          ) then 30
+         else if ( highway=tertiary|tertiary_link            ) then 20
+         else 4.0
+       )
+       else 0.0
+
+assign traffic_penalty
+  switch estimated_traffic_class=6|7    1
+  switch estimated_traffic_class=5      0.8
+  switch estimated_traffic_class=4      0.6
+  switch estimated_traffic_class=3      0.4
+  switch estimated_traffic_class=1|2    0.2
+  0
+
+
+assign noise_penalty
+  switch estimated_noise_class=6  2
+  switch estimated_noise_class=5  1.7
+  switch estimated_noise_class=4  1.4
+  switch estimated_noise_class=3  0.8
+  switch estimated_noise_class=2  0.5
+  switch estimated_noise_class=1  0.3
+  0
+
+assign no_river_penalty
+  switch estimated_river_class=6  0
+  switch estimated_river_class=5  0.1
+  switch estimated_river_class=4  0.4
+  switch estimated_river_class=3  0.7
+  switch estimated_river_class=2  0.8
+  switch estimated_river_class=1  0.9
+  1
+
+assign no_forest_penalty
+  switch estimated_forest_class=6   0
+  switch estimated_forest_class=5   0.1
+  switch estimated_forest_class=4   0.2
+  switch estimated_forest_class=3   0.3
+  switch estimated_forest_class=2   0.4
+  switch estimated_forest_class=1   0.5
+  1
+
+# calculate the cost-factor, which is the factor by which the distance of a
+# way-segment is multiplied to calculate the cost of that segment. The
+# costfactor must be >=1 and it's supposed to be close to 1 for the type of
+# way the routing profile is searching for
+
+assign costfactor
+  # fixed cost factor for taking the ferry
+  if route=ferry then 2 else
+
+  # penalties to encourage bike paths
+  add impracticality_penalty
+  add pedestrian_penalty
+  
+  # penalties to encourage really nice bike paths
+  add low_grade_cycling_infrastructure_penalty
+
+  add no_river_penalty
+  add noise_penalty
+  add traffic_penalty
+  add one_way_penalty
+  add no_forest_penalty
+  1
+
+---context:node  # following code refers to node tags
+
+assign defaultaccess =
+       if ( access= ) then true # add default barrier restrictions here!
+       else if ( access=private|no ) then false
+       else true
+
+assign bike_access =
+       if nodeaccessgranted=yes then true
+       else if bicycle= then
+       (
+         if vehicle= then defaultaccess
+         else not vehicle=private|no
+       )
+       else not bicycle=private|no|dismount
+
+assign footaccess =
+       if bicycle=dismount then true
+       else if foot= then defaultaccess
+       else not foot=private|no
+
+assign initialcost =
+       if bike_access then 0
+       else ( if footaccess then 100 else 1000000 )
