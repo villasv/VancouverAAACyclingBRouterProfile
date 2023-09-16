@@ -1,10 +1,14 @@
+# Full Example
+# https://brouter.de/brouter-web/#map=14/49.2853/-123.1407/standard&lonlats=-123.126559,49.289796;-123.097153,49.278784;-123.124914,49.279419;-123.135149,49.291143;-123.156363,49.303125;-123.148831,49.272573
+
 ---context:global
-assign validForBikes               = true
-assign processUnusedTags           = false # %processUnusedTags% | Set true to output unused tags in data tab | boolean
+assign validForBikes      = true
+assign processUnusedTags  = false # %processUnusedTags% | Set true to output unused tags in data tab | boolean
 
 ---context:way
 
-# only practical to consider public bike-able paths, plus ferry
+# Consider only public land paths, plus ferry
+
 assign impracticality_penalty =
   if (
     or highway=proposed|abandoned|motorway|motorway_link
@@ -12,100 +16,77 @@ assign impracticality_penalty =
     or access=private|no
     or vehicle=private|no
     ( and ( not route=ferry ) highway= )
-  ) then 1000
+  ) then 10000
   else 0
 
-# avoid pedestrian-only infrastructure
+# Avoid pedestrian-only infrastructure
+# Adjust based on:
+# - Rawlings Trail vs Stanley Park Seawall Bike Path
+#   https://brouter.de/brouter-web/#map=16/49.2973/-123.1481/standard&lonlats=-123.145752,49.295477;-123.150858,49.296597
+# - Seaside Path vs Beach Avenue Lane
+#   https://brouter.de/brouter-web/#map=15/49.2898/-123.1474/standard&lonlats=-123.150913,49.296269;-123.135583,49.277691
+# - Convention Center stairs vs Seawall lane
+
 assign pedestrian_penalty =
-  if (
-    or highway=footway
-    bicycle=dismount
-  )                         then 20
-  else if highway=steps     then 50
-  else 0
-
-# avoid shared lanes and painted gutters
-assign low_grade_cycling_infrastructure_penalty =
-  if (
-    or highway=residential|living_street
-       living_street=yes
-  )                             then 8
-  else if cycleway=shared_lane  then 10
-  else if not highway=cycleway  then 20
-  else 0
-
-assign cycle_route =
-  or bicycle_road=yes
-  or bicycle=yes
-  or bicycle=permissive
-  or bicycle=designated 
-  or route_bicycle_icn=yes
-  or route_bicycle_ncn=yes
-  or route_bicycle_rcn=yes
-  or route_bicycle_lcn=yes
-  lcn=yes
-
-# handle one-ways. On primary roads, wrong-oneways should
-# be close to forbidden, while on other ways we just add
-# 4 to the costfactor (making it at least 5 - you are allowed
-# to push your bike)
-assign badoneway =
-       if reversedirection=yes then
-         if oneway:bicycle=yes then true
-         else if oneway= then junction=roundabout
-         else oneway=yes|true|1
-       else oneway=-1
-
-assign one_way_penalty =
-       if ( badoneway ) then
-       (
-         if      ( cycleway=opposite|opposite_lane|opposite_track       ) then 0
-         else if ( cycleway:left=opposite|opposite_lane|opposite_track  ) then 0
-         else if ( cycleway:right=opposite|opposite_lane|opposite_track ) then 0
-         else if ( oneway:bicycle=no                         ) then 0
-         else if ( junction=roundabout|circular              ) then 60
-         else if ( highway=primary|primary_link              ) then 50
-         else if ( highway=secondary|secondary_link          ) then 30
-         else if ( highway=tertiary|tertiary_link            ) then 20
-         else 4.0
-       )
-       else 0.0
-
-assign traffic_penalty
-  switch estimated_traffic_class=6|7    1
-  switch estimated_traffic_class=5      0.8
-  switch estimated_traffic_class=4      0.6
-  switch estimated_traffic_class=3      0.4
-  switch estimated_traffic_class=1|2    0.2
+  switch highway=steps                10
+  switch bicycle=no                   3
+  switch bicycle=dismount             3
+  switch highway=footway              2
   0
 
+# Avoid shared lanes and painted gutters, prefer cycleways
+# Adjust based on:
+# - Haro & Bidwell to Safeway on Robson (should prefer Denman St)
+#   https://brouter.de/brouter-web/#map=18/49.29034/-123.13538/standard&lonlats=-123.134674,49.289597;-123.135149,49.291143
+
+assign low_grade_cycling_infrastructure_penalty =
+  switch highway=cycleway|footway             0
+  switch living_street=yes                    1
+  switch highway=residential|living_street    1
+  switch cycleway=shared_lane                 2
+  3
+
+assign one_way_penalty =
+  if and reversedirection=yes ( or oneway:bicycle=yes oneway=yes|true|1 )
+  then 20
+  else 0
+
+# Tiny cost adjustments for route niceties
+
+assign traffic_penalty
+  switch estimated_traffic_class=6|7    0.5
+  switch estimated_traffic_class=5      0.4
+  switch estimated_traffic_class=4      0.3
+  switch estimated_traffic_class=3      0.2
+  switch estimated_traffic_class=1|2    0.1
+  0
 
 assign noise_penalty
-  switch estimated_noise_class=6  2
-  switch estimated_noise_class=5  1.7
-  switch estimated_noise_class=4  1.4
-  switch estimated_noise_class=3  0.8
-  switch estimated_noise_class=2  0.5
-  switch estimated_noise_class=1  0.3
+  switch estimated_noise_class=6  1
+  switch estimated_noise_class=5  0.8
+  switch estimated_noise_class=4  0.6
+  switch estimated_noise_class=3  0.4
+  switch estimated_noise_class=2  0.2
+  switch estimated_noise_class=1  0.1
   0
 
 assign no_river_penalty
-  switch estimated_river_class=6  0
-  switch estimated_river_class=5  0.1
-  switch estimated_river_class=4  0.4
-  switch estimated_river_class=3  0.7
-  switch estimated_river_class=2  0.8
-  switch estimated_river_class=1  0.9
-  1
+  switch estimated_river_class=6  0.00
+  switch estimated_river_class=5  0.01
+  switch estimated_river_class=4  0.02
+  switch estimated_river_class=3  0.03
+  switch estimated_river_class=2  0.04
+  switch estimated_river_class=1  0.05
+  0.1
 
 assign no_forest_penalty
-  switch estimated_forest_class=6   0
-  switch estimated_forest_class=5   0.1
-  switch estimated_forest_class=4   0.2
-  switch estimated_forest_class=3   0.3
-  switch estimated_forest_class=2   0.4
-  switch estimated_forest_class=1   0.5
-  1
+  switch estimated_forest_class=6   0.00
+  switch estimated_forest_class=5   0.01
+  switch estimated_forest_class=4   0.02
+  switch estimated_forest_class=3   0.03
+  switch estimated_forest_class=2   0.04
+  switch estimated_forest_class=1   0.05
+  0.1
 
 # calculate the cost-factor, which is the factor by which the distance of a
 # way-segment is multiplied to calculate the cost of that segment. The
