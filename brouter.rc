@@ -23,12 +23,13 @@ assign impracticality_penalty =
 # Adjust based on:
 # - Rawlings Trail vs Stanley Park Seawall Bike Path
 #   https://brouter.de/brouter-web/#map=16/49.2973/-123.1481/standard&lonlats=-123.145752,49.295477;-123.150858,49.296597
+# - Third Beach to Second Beach (should prefer Seawall)
 # - Seaside Path vs Beach Avenue Lane
 #   https://brouter.de/brouter-web/#map=15/49.2898/-123.1474/standard&lonlats=-123.150913,49.296269;-123.135583,49.277691
 # - Convention Center stairs vs Seawall lane
 
 assign pedestrian_penalty =
-  switch highway=steps                        20
+  switch highway=steps                        30
   switch bicycle=no                           10
   switch bicycle=dismount                     10
   switch and highway=footway
@@ -61,7 +62,7 @@ assign one_way_penalty =
     and ( not oneway:bicycle=no )
     ( or oneway:bicycle=yes oneway=yes|true|1 )
   )
-  then 2
+  then 10
   else 0
 
 # Tiny cost adjustments for route niceties
