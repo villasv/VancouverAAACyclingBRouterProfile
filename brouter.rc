@@ -29,7 +29,7 @@ assign impracticality_penalty =
 # - Convention Center stairs vs Seawall lane
 
 assign pedestrian_penalty =
-  switch highway=steps                        30
+  switch highway=steps                        50
   switch bicycle=no                           10
   switch bicycle=dismount                     10
   switch and highway=footway
