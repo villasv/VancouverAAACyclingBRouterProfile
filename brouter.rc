@@ -28,30 +28,40 @@ assign impracticality_penalty =
 # - Convention Center stairs vs Seawall lane
 
 assign pedestrian_penalty =
-  switch highway=steps                10
-  switch bicycle=no                   3
-  switch bicycle=dismount             3
-  switch highway=footway              2
+  switch highway=steps                        20
+  switch bicycle=no                           10
+  switch bicycle=dismount                     10
+  switch and highway=footway
+             estimated_forest_class=6|5       1
+  switch highway=footway                      10
   0
 
 # Avoid shared lanes and painted gutters, prefer cycleways
 # Adjust based on:
 # - Haro & Bidwell to Safeway on Robson (should prefer Denman St)
 #   https://brouter.de/brouter-web/#map=18/49.29034/-123.13538/standard&lonlats=-123.134674,49.289597;-123.135149,49.291143
+# - Harbourside to Myodetox (should prefer Seawall over Pender St)
+#   https://brouter.de/brouter-web/#map=15/49.2839/-123.1152/standard&lonlats=-123.126554,49.289797;-123.097232,49.278785
 
-assign cycling_infrastructure_safety_penalty =
+assign safety_penalty =
   switch highway=cycleway|footway             0
-  switch living_street=yes                    0.10
-  switch highway=residential|living_street    0.10
-  switch cycleway=shared_lane                 0.15
-  switch highway=tertiary|tertiary_link       0.15
-  switch highway=secondary|secondary_link     0.20
-  switch highway=primary|primary_link         0.50
+  switch living_street=yes                    0.15
+  switch cycleway=shared_lane                 0.20
+  switch highway=residential|living_street    0.25
+  switch highway=tertiary|tertiary_link       1.50
+  switch highway=service                      2.00
+  switch highway=secondary|secondary_link     3.00
+  switch highway=primary|primary_link         5.00
+  switch highway=trunk                        5.00
   1
 
 assign one_way_penalty =
-  if and reversedirection=yes ( or oneway:bicycle=yes oneway=yes|true|1 )
-  then 20
+  if (
+    and reversedirection=yes
+    and ( not oneway:bicycle=no )
+    ( or oneway:bicycle=yes oneway=yes|true|1 )
+  )
+  then 2
   else 0
 
 # Tiny cost adjustments for route niceties
@@ -74,19 +84,19 @@ assign noise_penalty
 
 assign no_river_penalty
   switch estimated_river_class=6|5      0.00
-  switch estimated_river_class=4        0.01
-  switch estimated_river_class=3        0.02
-  switch estimated_river_class=2        0.03
-  switch estimated_river_class=1        0.04
-                                        0.05
+  switch estimated_river_class=4        0.02
+  switch estimated_river_class=3        0.04
+  switch estimated_river_class=2        0.06
+  switch estimated_river_class=1        0.08
+                                        0.10
 
 assign no_forest_penalty
   switch estimated_forest_class=6|5     0.00
-  switch estimated_forest_class=4       0.01
-  switch estimated_forest_class=3       0.02
-  switch estimated_forest_class=2       0.03
-  switch estimated_forest_class=1       0.04
-                                        0.05
+  switch estimated_forest_class=4       0.02
+  switch estimated_forest_class=3       0.04
+  switch estimated_forest_class=2       0.06
+  switch estimated_forest_class=1       0.08
+                                        0.10
 
 # calculate the cost-factor, which is the factor by which the distance of a
 # way-segment is multiplied to calculate the cost of that segment. The
@@ -102,7 +112,7 @@ assign costfactor
   add pedestrian_penalty
   
   # penalties to encourage really nice bike paths
-  add cycling_infrastructure_safety_penalty
+  add safety_penalty
 
   add no_river_penalty
   add noise_penalty
