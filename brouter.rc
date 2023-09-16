@@ -46,15 +46,14 @@ assign pedestrian_penalty =
 
 assign safety_penalty =
   switch highway=cycleway|footway             0
-  switch living_street=yes                    0.15
-  switch cycleway=shared_lane                 0.20
   switch highway=residential|living_street    0.25
+  switch cycleway=shared_lane                 0.30
   switch highway=tertiary|tertiary_link       1.50
   switch highway=service                      2.00
   switch highway=secondary|secondary_link     3.00
   switch highway=primary|primary_link         5.00
   switch highway=trunk                        5.00
-  1
+  10
 
 assign one_way_penalty =
   if (
