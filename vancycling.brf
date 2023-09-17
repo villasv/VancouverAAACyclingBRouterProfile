@@ -37,23 +37,30 @@ assign pedestrian_penalty =
   switch highway=footway                      10
   0
 
-# Avoid shared lanes and painted gutters, prefer cycleways
+# Avoid shared lanes, painted gutters and alleys
 # Adjust based on:
 # - Haro & Bidwell to Safeway on Robson (should prefer Denman St)
 #   https://brouter.de/brouter-web/#map=18/49.29034/-123.13538/standard&lonlats=-123.134674,49.289597;-123.135149,49.291143
 # - Harbourside to Myodetox (should prefer Seawall over Pender St)
 #   https://brouter.de/brouter-web/#map=15/49.2839/-123.1152/standard&lonlats=-123.126554,49.289797;-123.097232,49.278785
+# - Cambie St to Alexander St (should not take Blood Alley)
+#   https://www.brouter.de/brouter-web/#map=17/49.28322/-123.10792/standard,Waymarked_Trails-Cycling&lonlats=-123.126527,49.289796;-123.126527,49.289796;-123.095911,49.28404
 
 assign safety_penalty =
   switch highway=cycleway|footway             0
   switch highway=residential|living_street    0.25
   switch cycleway=shared_lane                 0.30
   switch highway=tertiary|tertiary_link       1.50
-  switch highway=service                      2.00
   switch highway=secondary|secondary_link     3.00
+  switch highway=service                      3.50
   switch highway=primary|primary_link         5.00
   switch highway=trunk                        5.00
   10
+
+# Avoid reversing one ways
+# Adjust based on:
+# - Carrall St to Alexander St (should reverse a tiny bit)
+#   https://www.brouter.de/brouter-web/#map=16/49.2833/-123.1046/standard,Waymarked_Trails-Cycling&lonlats=-123.126527,49.289796;-123.126527,49.289796;-123.095911,49.28404
 
 assign one_way_penalty =
   if (
@@ -61,7 +68,7 @@ assign one_way_penalty =
     and ( not oneway:bicycle=no )
     ( or oneway:bicycle=yes oneway=yes|true|1 )
   )
-  then 10
+  then 3
   else 0
 
 # Tiny cost adjustments for route niceties
