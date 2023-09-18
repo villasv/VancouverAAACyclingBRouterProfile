@@ -1,3 +1,4 @@
+from typing import List, Tuple
 from requests import Session, Request
 from config import log
 
@@ -13,15 +14,15 @@ def set_profile(profile):
     return response
 
 
-def get_route(points):
+def get_route_geojson(points: List[Tuple[int, int]]):
     session = Session()
     resource_url = BROUTER_BASE_URL + "brouter"
     params = {
-        "lonlats": "",
+        "lonlats": "|".join([f"{p.lon},{p.lat}" for p in points]),
         "profile": PROFILE_ID,
         "alternativeidx": 0,
         "format": "geojson",
     }
-    request = Request("POST", resource_url, params=params).prepare()
+    request = Request("GET", resource_url, params=params).prepare()
     response = session.send(request)
-    return response
+    return response.json()

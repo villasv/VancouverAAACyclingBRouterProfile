@@ -29,20 +29,23 @@ class Router:
         Stanley Park Seawall Bike Path around Ceperley Meadow, but the
         difference in distance is not worth it.
 
-        >>> ll, rt = LonLat(-123.145752, 49.295477), LonLat(-123.150858,49.296597)
-        >>> router.eval([ll, rt])
+        >>> router.eval([LonLat(-123.145752, 49.295477), LonLat(-123.150858,49.296597)])
 
+        Third Beach to Second Beach (should prefer Seawall)
 
-        # Adjust based on: # - Third Beach to Second Beach (should prefer
-        Seawall) # - Seaside Path vs Beach Avenue Lane #
+        Seaside Path vs Beach Avenue Lane
         https://brouter.de/brouter-web/#map=15/49.2898/-123.1474/standard&lonlats=-123.150913,49.296269;-123.135583,49.277691
-        # - Convention Center stairs vs Seawall lane
 
+        Convention Center stairs vs Seawall lane
         """
         return
 
     def eval(self, points: List[LonLat]):
-        brouter.get_route()
+        geojson = brouter.get_route_geojson(points)
+        route_feature = geojson["features"][0]
+        data_labels = route_feature["properties"]["messages"][0]
+        segments = route_feature["properties"]["messages"][1:]
+        return [dict(zip(data_labels, s)) for s in segments]
 
 
 if __name__ == "__main__":
