@@ -2,6 +2,7 @@
 # https://brouter.de/brouter-web/#map=14/49.2853/-123.1407/standard&lonlats=-123.126559,49.289796;-123.097153,49.278784;-123.124914,49.279419;-123.135149,49.291143;-123.156363,49.303125;-123.148831,49.272573
 
 ---context:global
+
 assign validForBikes      = true
 assign processUnusedTags  = false # %processUnusedTags% | Set true to output unused tags in data tab | boolean
 
@@ -16,7 +17,7 @@ assign impracticality_penalty =
     or access=private|no
     or vehicle=private|no
     ( and ( not route=ferry ) highway= )
-  ) then 10000
+  ) then 99999
   else 0
 
 # Avoid pedestrian infrastructure

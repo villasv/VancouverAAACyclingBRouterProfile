@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "vancycling-brouter-profile"
 version = "0.0.0"
-description = ""
+description = "Building BRouter profiles for cycling in Vancouver"
 authors = ["Victor Villas <mail@victor.villas>"]
 readme = "README.md"
 
@@ -13,6 +13,7 @@ python = "^3.10"
 black = "^23.9.1"
 flake8 = "^6.1.0"
 pylint = "^2.17.5"
+
 
 [build-system]
 requires = ["poetry-core"]
