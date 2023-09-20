@@ -3,6 +3,7 @@ from requests import Session, Request
 from config import log
 
 BROUTER_BASE_URL = "https://www.brouter.de/"
+WEB_PREFIX = "brouter-web/#map=13/49.2743/-123.1351/standard"
 PROFILE_ID = "custom_1694894568334"
 
 
@@ -24,6 +25,10 @@ def get_route_geojson(points: List[Tuple[int, int]]):
         "alternativeidx": 0,
         "format": "geojson",
     }
+    log.debug(
+        f"{BROUTER_BASE_URL}{WEB_PREFIX}&lonlats=%s",
+        ";".join([f"{p.lon},{p.lat}" for p in points]),
+    )
     request = Request("GET", resource_url, params=params).prepare()
     response = session.send(request)
     route_props = response.json()["features"][0]["properties"]

@@ -46,7 +46,6 @@ class Router:
         return Path(DEFAULT_PROFILE_PATH).read_text()
 
     def eval(self, points: List[LonLat]):
-        log.debug("Routing %s", points)
         geojson = brouter.get_route_geojson(points)
         route_feature = geojson["features"][0]
         data_labels = route_feature["properties"]["messages"][0]

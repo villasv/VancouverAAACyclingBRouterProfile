@@ -1,11 +1,6 @@
-# Full Example
-# https://brouter.de/brouter-web/#map=14/49.2853/-123.1407/standard&lonlats=-123.126559,49.289796;-123.097153,49.278784;-123.124914,49.279419;-123.135149,49.291143;-123.156363,49.303125;-123.148831,49.272573
-
 ---context:global
-
 assign validForBikes      = true
 assign processUnusedTags  = false # %processUnusedTags% | Set true to output unused tags in data tab | boolean
-
 ---context:way
 
 assign impracticality_penalty =
@@ -119,12 +114,10 @@ assign costfactor
   1
 
 ---context:node  # following code refers to node tags
-
 assign defaultaccess =
-       if ( access= ) then true # add default barrier restrictions here!
+       if ( access= ) then true
        else if ( access=private|no ) then false
        else true
-
 assign bike_access =
        if nodeaccessgranted=yes then true
        else if bicycle= then
@@ -133,12 +126,10 @@ assign bike_access =
          else not vehicle=private|no
        )
        else not bicycle=private|no|dismount
-
 assign footaccess =
        if bicycle=dismount then true
        else if foot= then defaultaccess
        else not foot=private|no
-
 assign initialcost =
        if bike_access then 0
-       else ( if footaccess then 100 else 1000000 )
+       else ( if footaccess then 10 else 1000000 )

@@ -4,11 +4,15 @@
         "BROUTER",
         "Ceperley",
         "Danbo",
+        "defaultaccess",
         "Dunsmuir",
         "extraglobs",
+        "footaccess",
         "Hornby",
+        "initialcost",
         "lonlats",
         "motorroad",
+        "nodeaccessgranted",
         "Smithe",
         "vancycling"
     ]
