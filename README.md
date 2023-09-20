@@ -38,7 +38,7 @@ The custom profile for BRouter in this repository offers that route: merely 300m
 longer but immediately leaving Robson for Jervis and Haro which are residential
 streets plus Smithe, Horny and Dunsmuir protected paths. The goal of this
 project is researching a routing profile that is highly biased towards pleasant
-rides.
+rides in the Vancouver Metro region.
 
 ## Case Study
 
@@ -53,7 +53,7 @@ rides.
 ### Build
 
 Until BRouter Web supports permalink/perennial profiles, we need to export the
-profile definition for users to import on their browsers:
+profile definition files for users to import on their browsers:
 
 ```bash
 poetry run python vancycling_brouter_profile/transpiler.py

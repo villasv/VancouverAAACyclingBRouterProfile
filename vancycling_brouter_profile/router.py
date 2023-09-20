@@ -4,13 +4,14 @@ from pathlib import Path
 
 import brouter
 from config import log
+from transpiler import transpile
 
 LonLat = namedtuple("LonLat", "lon lat")
 
 
 class Router:
     def __init__(self):
-        self.profile = self.compile()
+        self.profile = transpile(self)
         brouter.set_profile(self.profile)
 
     def assign_pedestrian_penalty(self, **context):
@@ -37,13 +38,6 @@ class Router:
         Convention Center stairs vs Seawall lane
         """
         return
-
-    def compile(self):
-        """
-        Not implemented yet, just return the manually crafted one.
-        """
-        DEFAULT_PROFILE_PATH = "vancycling.brf"
-        return Path(DEFAULT_PROFILE_PATH).read_text()
 
     def eval(self, points: List[LonLat]):
         geojson = brouter.get_route_geojson(points)

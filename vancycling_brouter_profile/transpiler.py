@@ -1,12 +1,16 @@
+from pathlib import Path
+
+DEFAULT_PROFILE_PATH = "vancycling.brf"
+
 BEFORE = """
 ---context:global
 assign validForBikes      = true
-assign processUnusedTags  = false # %processUnusedTags% | Set true to output unused tags in data tab | boolean
+assign processUnusedTags  = true
 ---context:way
 """
 
 AFTER = """
----context:node  # following code refers to node tags
+---context:node
 assign defaultaccess =
        if ( access= ) then true
        else if ( access=private|no ) then false
@@ -29,9 +33,13 @@ assign initialcost =
 """
 
 
-def transpile():
-    pass
+def transpile(router):
+    profile_parts = [BEFORE, AFTER]
+    return Path(DEFAULT_PROFILE_PATH).read_text()
 
 
 if __name__ == "__main__":
-    transpile()
+    from router import Router
+
+    profile = transpile(Router())
+    Path(DEFAULT_PROFILE_PATH).write_text(profile)
