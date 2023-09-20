@@ -8,9 +8,10 @@ PROFILE_ID = "custom_1694894568334"
 
 def set_profile(profile):
     session = Session()
-    resource_url = BROUTER_BASE_URL + "brouter/profile"
-    request = Request("POST", resource_url).prepare()
+    resource_url = BROUTER_BASE_URL + "brouter/profile/" + PROFILE_ID
+    request = Request("POST", resource_url, data=profile).prepare()
     response = session.send(request)
+    log.debug(response.json())
     return response
 
 
@@ -25,4 +26,6 @@ def get_route_geojson(points: List[Tuple[int, int]]):
     }
     request = Request("GET", resource_url, params=params).prepare()
     response = session.send(request)
+    route_props = response.json()["features"][0]["properties"]
+    log.debug({k: v for k, v in route_props.items() if k not in ["messages", "times"]})
     return response.json()

@@ -8,8 +8,6 @@ assign processUnusedTags  = false # %processUnusedTags% | Set true to output unu
 
 ---context:way
 
-# Consider only public land paths, plus ferry
-
 assign impracticality_penalty =
   if (
     or highway=proposed|abandoned|motorway|motorway_link

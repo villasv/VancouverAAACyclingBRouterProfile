@@ -2,22 +2,18 @@ from typing import List, Optional
 from collections import namedtuple
 from pathlib import Path
 
-import logging
 import brouter
-
-DEFAULT_PROFILE_PATH = "vancycling.brf"
+from config import log
 
 LonLat = namedtuple("LonLat", "lon lat")
 
 
 class Router:
-    def __init__(self, profile_spec: Optional[str] = None):
-        if profile_spec is None:
-            profile_spec = Path(DEFAULT_PROFILE_PATH).read_text()
+    def __init__(self):
+        self.profile = self.compile()
+        brouter.set_profile(self.profile)
 
-        self.profile = profile_spec
-
-    def _pedestrian_penalty(self, **context):
+    def assign_pedestrian_penalty(self, **context):
         """
         Avoid pedestrian infrastructure, but not too much! The bicycle is the
         only vehicle that can be carried around by foot in pedestrian paths,
@@ -29,7 +25,9 @@ class Router:
         Stanley Park Seawall Bike Path around Ceperley Meadow, but the
         difference in distance is not worth it.
 
-        >>> router.eval([LonLat(-123.145752, 49.295477), LonLat(-123.150858,49.296597)])
+        >>> route = router.eval([LonLat(-123.145752, 49.295477), LonLat(-123.150858,49.296597)])
+        >>> len([p for p in route if 'footway' in p['WayTags']])
+        2
 
         Third Beach to Second Beach (should prefer Seawall)
 
@@ -40,15 +38,26 @@ class Router:
         """
         return
 
+    def compile(self):
+        """
+        Not implemented yet, just return the manually crafted one.
+        """
+        DEFAULT_PROFILE_PATH = "vancycling.brf"
+        return Path(DEFAULT_PROFILE_PATH).read_text()
+
     def eval(self, points: List[LonLat]):
+        log.debug("Routing %s", points)
         geojson = brouter.get_route_geojson(points)
         route_feature = geojson["features"][0]
         data_labels = route_feature["properties"]["messages"][0]
         segments = route_feature["properties"]["messages"][1:]
-        return [dict(zip(data_labels, s)) for s in segments]
+        paths = [dict(zip(data_labels, s)) for s in segments]
+        log.debug(paths)
+        return paths
 
 
 if __name__ == "__main__":
     import doctest
 
-    doctest.testmod(extraglobs={"router": Router()})
+    default_router = Router()
+    doctest.testmod(extraglobs={"router": default_router})
